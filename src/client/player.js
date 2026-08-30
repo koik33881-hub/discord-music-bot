@@ -37,13 +37,6 @@ function initPlayer(client) {
     joinNewVoiceChannel: false,
     ffmpeg: {
       path: ffmpegStatic,
-      args: {
-        global: {
-          '-reconnect': '1',
-          '-reconnect_streamed': '1',
-          '-reconnect_delay_max': '5',
-        },
-      },
     },
   });
 
