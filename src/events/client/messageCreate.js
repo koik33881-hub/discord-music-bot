@@ -14,6 +14,8 @@ module.exports = {
     if (message.author.bot || !message.guild) return;
 
     let content = message.content.trim();
+    console.log(`[DEBUG messageCreate] From: ${message.author.tag} | Content: ${JSON.stringify(content)}`);
+
     let isCommand = false;
     let cmdName = '';
     let args = [];
@@ -35,6 +37,8 @@ module.exports = {
     const voiceChannel = message.member?.voice?.channel;
     const distube = client.distube;
 
+    console.log(`[DEBUG Command Detected]: ${cmdName} | User VoiceChannel: ${voiceChannel?.name || 'NONE'}`);
+
     try {
       switch (cmdName) {
         case 'play':
@@ -49,7 +53,7 @@ module.exports = {
             query = query.slice(1, -1).trim();
           }
 
-          // Delete user message or suppress embeds so Discord's native Spotify preview card never shows up
+          // Suppress embed
           try {
             if (message.deletable) {
               await message.delete();
@@ -59,15 +63,17 @@ module.exports = {
           } catch (_) {}
 
           if (!voiceChannel) {
+            console.log('[DEBUG] User is NOT in a voice channel!');
             return message.channel.send({
-              content: `<@${message.author.id}> ❌ Anda harus berada di dalam **Voice Channel** terlebih dahulu untuk memutar musik!`,
+              content: `<@${message.author.id}> ❌ Anda harus berada di dalam **Voice Channel** (klik channel suara seperti **Chill** / **General**) terlebih dahulu!`,
             });
           }
 
           const permissions = voiceChannel.permissionsFor(message.guild.members.me);
           if (!permissions.has(PermissionsBitField.Flags.Connect) || !permissions.has(PermissionsBitField.Flags.Speak)) {
+            console.log('[DEBUG] Missing Voice Channel permissions');
             return message.channel.send({
-              content: `<@${message.author.id}> ❌ Bot tidak memiliki izin untuk **Connect** atau **Speak** di Voice Channel Anda!`,
+              content: `<@${message.author.id}> ❌ Bot tidak memiliki izin untuk **Connect** atau **Speak** di Voice Channel ${voiceChannel.name}!`,
             });
           }
 
@@ -78,6 +84,8 @@ module.exports = {
             });
           }
 
+          console.log(`[DEBUG] Attempting distube.play in channel "${voiceChannel.name}" for query: ${query}`);
+
           const searchingMsg = await message.channel.send({
             content: `🔍 **Mencari dan memproses:** \`${query.length > 100 ? query.slice(0, 97) + '...' : query}\` (oleh <@${message.author.id}>)`,
           });
@@ -87,8 +95,9 @@ module.exports = {
               textChannel: message.channel,
               member: message.member,
             });
+            console.log('[DEBUG] distube.play succeeded!');
           } catch (err) {
-            console.error('[MessagePlay] Error:', err.message);
+            console.error('[MessagePlay Error]:', err);
             await searchingMsg.edit(`❌ Gagal memutar musik: ${err.message || 'Sumber tidak ditemukan'}`);
           }
           break;

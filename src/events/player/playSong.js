@@ -10,13 +10,11 @@ module.exports = {
     if (!queue.textChannel) return;
 
     try {
-      // Optional: Clean up or remove buttons from previous player message
+      // Disable components on old player message
       if (queue.metadata?.playerMessage) {
         try {
           await queue.metadata.playerMessage.edit({ components: [] });
-        } catch (_) {
-          // Old message may have been deleted by user or channel cleared
-        }
+        } catch (_) {}
       }
 
       const payload = createPlayerEmbed(queue, song, false);
