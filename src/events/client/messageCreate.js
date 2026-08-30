@@ -18,15 +18,16 @@ module.exports = {
     let cmdName = '';
     let args = [];
 
+    // Split by any whitespace including newlines \n, \r, tabs, spaces
     if (content.startsWith(PREFIX)) {
       isCommand = true;
-      args = content.slice(PREFIX.length).trim().split(/ +/);
-      cmdName = args.shift().toLowerCase();
+      args = content.slice(PREFIX.length).trim().split(/\s+/);
+      cmdName = (args.shift() || '').toLowerCase();
     } else if (content.startsWith('/')) {
       // Fallback if user typed /play as regular text
       isCommand = true;
-      args = content.slice(1).trim().split(/ +/);
-      cmdName = args.shift().toLowerCase();
+      args = content.slice(1).trim().split(/\s+/);
+      cmdName = (args.shift() || '').toLowerCase();
     }
 
     if (!isCommand || !cmdName) return;
@@ -48,32 +49,43 @@ module.exports = {
             query = query.slice(1, -1).trim();
           }
 
-          // Auto-suppress Discord native preview embed so chat stays clean
-          if (message.guild.members.me?.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-            message.suppressEmbeds(true).catch(() => {});
-          }
+          // Delete user message or suppress embeds so Discord's native Spotify preview card never shows up
+          try {
+            if (message.deletable) {
+              await message.delete();
+            } else {
+              await message.suppressEmbeds(true);
+            }
+          } catch (_) {}
 
           if (!voiceChannel) {
-            return message.reply('❌ Anda harus berada di dalam Voice Channel terlebih dahulu!');
+            return message.channel.send({
+              content: `<@${message.author.id}> ❌ Anda harus berada di dalam **Voice Channel** terlebih dahulu untuk memutar musik!`,
+            });
           }
 
           const permissions = voiceChannel.permissionsFor(message.guild.members.me);
           if (!permissions.has(PermissionsBitField.Flags.Connect) || !permissions.has(PermissionsBitField.Flags.Speak)) {
-            return message.reply('❌ Bot tidak memiliki izin untuk **Connect** atau **Speak** di Voice Channel Anda!');
+            return message.channel.send({
+              content: `<@${message.author.id}> ❌ Bot tidak memiliki izin untuk **Connect** atau **Speak** di Voice Channel Anda!`,
+            });
           }
 
           const botVoiceChannel = message.guild.members.me?.voice?.channel;
           if (botVoiceChannel && botVoiceChannel.id !== voiceChannel.id) {
-            return message.reply(`❌ Bot sudah terhubung di voice channel lain: **${botVoiceChannel.name}**!`);
+            return message.channel.send({
+              content: `<@${message.author.id}> ❌ Bot sudah terhubung di voice channel lain: **${botVoiceChannel.name}**!`,
+            });
           }
 
-          const searchingMsg = await message.reply(`🔍 **Mencari dan memproses:** \`${query.length > 100 ? query.slice(0, 97) + '...' : query}\``);
+          const searchingMsg = await message.channel.send({
+            content: `🔍 **Mencari dan memproses:** \`${query.length > 100 ? query.slice(0, 97) + '...' : query}\` (oleh <@${message.author.id}>)`,
+          });
 
           try {
             await distube.play(voiceChannel, query, {
               textChannel: message.channel,
               member: message.member,
-              message: message,
             });
           } catch (err) {
             console.error('[MessagePlay] Error:', err.message);
