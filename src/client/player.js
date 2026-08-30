@@ -1,14 +1,12 @@
 const { DisTube } = require('distube');
-const { YouTubePlugin } = require('@distube/youtube');
-const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
-const { DeezerPlugin } = require('@distube/deezer');
+const { SpotifyPlugin } = require('@distube/spotify');
 const { DirectLinkPlugin } = require('@distube/direct-link');
 const ffmpegStatic = require('ffmpeg-static');
 
 /**
  * Initializes and configures the DisTube music player instance (DisTube v5 compatible)
- * Pure JavaScript Audio Engine (Zero Python dependency)
+ * Prioritizes full-length audio tracks (bypasses 30-second preview clips).
  * @param {import('discord.js').Client} client
  * @returns {DisTube}
  */
@@ -21,13 +19,14 @@ function initPlayer(client) {
     };
   }
 
+  // SoundCloud adalah #1 untuk lagu berdurasi penuh, Spotify untuk membaca playlist
   const plugins = [
-    new YouTubePlugin(),
-    new SpotifyPlugin(spotifyOptions),
     new SoundCloudPlugin(),
-    new DeezerPlugin(),
+    new SpotifyPlugin(spotifyOptions),
     new DirectLinkPlugin(),
   ];
+
+  const ffmpegPath = process.platform === 'win32' ? (ffmpegStatic || 'ffmpeg') : 'ffmpeg';
 
   const distube = new DisTube(client, {
     plugins: plugins,
@@ -37,7 +36,18 @@ function initPlayer(client) {
     emitAddListWhenCreatingQueue: false,
     joinNewVoiceChannel: false,
     ffmpeg: {
-      path: ffmpegStatic,
+      path: ffmpegPath,
+      args: {
+        global: {
+          reconnect: '1',
+          reconnect_streamed: '1',
+          reconnect_delay_max: '5',
+        },
+        input: {
+          probesize: '1024k',
+          analyzeduration: '500000',
+        },
+      },
     },
   });
 
