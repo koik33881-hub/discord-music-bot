@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "node --test tests/playlistManager.test.js tests/playerEmbed.test.js tests/commands.test.js tests/security.test.js tests/concurrency.test.js tests/playerButtons.test.js tests/musicEngine.test.js"
+    "test": "node --test tests/playlistManager.test.js tests/playerEmbed.test.js tests/commands.test.js tests/security.test.js tests/concurrency.test.js tests/playerButtons.test.js tests/musicEngine.test.js tests/instanceLock.test.js"
   },
   "keywords": [
     "discord",

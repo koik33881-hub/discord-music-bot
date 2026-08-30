@@ -1,4 +1,17 @@
 require('dotenv').config();
+const { InstanceLock } = require('./utils/instanceLock');
+
+// 0. Anti-Collision Guard: Ensure single instance per machine
+InstanceLock.acquire();
+
+// Optional Guard: Disable local bot if Railway/Cloud is the designated host
+if (process.env.DISABLE_LOCAL_BOT === 'true' && !process.env.RAILWAY_ENVIRONMENT) {
+  console.log('\n🔒 [Environment Guard] Local bot is DISABLED via DISABLE_LOCAL_BOT=true.');
+  console.log('   The bot is designated to run exclusively on Railway (Cloud).');
+  console.log('   Exiting to prevent session collisions.\n');
+  process.exit(0);
+}
+
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
