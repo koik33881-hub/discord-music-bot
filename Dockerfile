@@ -1,11 +1,9 @@
-FROM node:20-bookworm-slim
+FROM node:20-bullseye-slim
 
-# Install system audio dependencies, python 3.11+, and ffmpeg
+# Install system audio dependencies and ffmpeg
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ffmpeg \
-    python3 \
-    python3-pip \
     make \
     g++ \
     build-essential \

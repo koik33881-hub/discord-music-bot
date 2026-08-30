@@ -171,7 +171,7 @@ const requiredDeps = [
   '@distube/soundcloud',
   '@distube/deezer',
   '@distube/direct-link',
-  '@distube/yt-dlp',
+  '@distube/youtube',
   '@noble/ciphers',
   '@stablelib/xchacha20poly1305',
   'libsodium-wrappers',
