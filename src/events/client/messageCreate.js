@@ -23,7 +23,7 @@ module.exports = {
       args = content.slice(PREFIX.length).trim().split(/ +/);
       cmdName = args.shift().toLowerCase();
     } else if (content.startsWith('/')) {
-      // Fallback if user typed /play as regular text before Discord UI slash commands synced
+      // Fallback if user typed /play as regular text
       isCommand = true;
       args = content.slice(1).trim().split(/ +/);
       cmdName = args.shift().toLowerCase();
@@ -38,9 +38,19 @@ module.exports = {
       switch (cmdName) {
         case 'play':
         case 'p': {
-          const query = args.join(' ').trim();
+          let query = args.join(' ').trim();
           if (!query) {
-            return message.reply('❌ Harap masukkan judul lagu atau link! Contoh: `!play alan walker faded` atau `/play alan walker faded`');
+            return message.reply('❌ Harap masukkan judul lagu atau link! Contoh: `!play https://open.spotify.com/playlist/...`');
+          }
+
+          // Strip < > if present
+          if (query.startsWith('<') && query.endsWith('>')) {
+            query = query.slice(1, -1).trim();
+          }
+
+          // Auto-suppress Discord native preview embed so chat stays clean
+          if (message.guild.members.me?.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+            message.suppressEmbeds(true).catch(() => {});
           }
 
           if (!voiceChannel) {

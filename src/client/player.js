@@ -4,6 +4,7 @@ const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { DeezerPlugin } = require('@distube/deezer');
 const { DirectLinkPlugin } = require('@distube/direct-link');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
+const ffmpegStatic = require('ffmpeg-static');
 
 /**
  * Initializes and configures the DisTube music player instance (DisTube v5 compatible)
@@ -34,6 +35,16 @@ function initPlayer(client) {
     emitAddSongWhenCreatingQueue: false,
     emitAddListWhenCreatingQueue: false,
     joinNewVoiceChannel: false,
+    ffmpeg: {
+      path: ffmpegStatic,
+      args: {
+        global: {
+          '-reconnect': '1',
+          '-reconnect_streamed': '1',
+          '-reconnect_delay_max': '5',
+        },
+      },
+    },
   });
 
   return distube;
