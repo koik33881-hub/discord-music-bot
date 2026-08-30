@@ -1,4 +1,5 @@
 {
+  "prefix": "!",
   "embedColor": "#00BFFF",
   "errorColor": "#FF4444",
   "successColor": "#00C851",
