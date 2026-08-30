@@ -10,23 +10,24 @@ module.exports = {
     if (!queue.textChannel) return;
 
     try {
-      // Disable components on old player message
-      if (queue.metadata?.playerMessage) {
-        try {
-          await queue.metadata.playerMessage.edit({ components: [] });
-        } catch (_) {}
-      }
-
       const payload = createPlayerEmbed(queue, song, false);
       if (!payload) return;
 
+      // Clean up previous player controller message to prevent chat clutter & dead buttons
+      if (queue.metadata?.playerMessage) {
+        try {
+          await queue.metadata.playerMessage.delete().catch(() => {});
+        } catch (_) {}
+      }
+
+      // Send the active player controller message
       const playerMessage = await queue.textChannel.send(payload);
       queue.metadata = {
         ...(queue.metadata || {}),
         playerMessage: playerMessage,
       };
     } catch (error) {
-      console.error('[PlaySong Event] Error sending player message:', error.message);
+      console.error('[PlaySong Event] Error updating player message:', error.message);
     }
   },
 };

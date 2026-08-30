@@ -25,7 +25,7 @@ function initPlayer(client) {
     new SoundCloudPlugin(),
     new DeezerPlugin(),
     new DirectLinkPlugin(),
-    new YtDlpPlugin(),
+    new YtDlpPlugin({ update: false }),
   ];
 
   const distube = new DisTube(client, {

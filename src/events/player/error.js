@@ -6,7 +6,6 @@ const config = require('../../../config.json');
  */
 function sanitizeErrorMessage(msg) {
   if (!msg || typeof msg !== 'string') return 'Terjadi kesalahan pemutaran audio.';
-  // Strip tokens or absolute file paths
   return msg
     .replace(/[A-Za-z0-9_-]{24,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{27,}/g, '[REDACTED_TOKEN]')
     .replace(/[A-Z]:\\[^\s]+/gi, '[PATH]')
@@ -16,12 +15,14 @@ function sanitizeErrorMessage(msg) {
 module.exports = {
   name: 'error',
   /**
-   * @param {import('discord.js').GuildTextBasedChannel} channel
    * @param {Error} error
+   * @param {import('distube').Queue} [queue]
+   * @param {import('distube').Song} [song]
    */
-  async execute(channel, error) {
+  async execute(error, queue, song) {
     console.error('[DisTube Player Error]:', error?.message || error);
-    if (!channel) return;
+    const textChannel = queue?.textChannel;
+    if (!textChannel) return;
 
     try {
       const cleanMessage = sanitizeErrorMessage(error?.message || String(error));
@@ -32,7 +33,7 @@ module.exports = {
         .setFooter({ text: 'Jika lagu gagal dimuat, coba cari dengan kata kunci lain atau gunakan link alternatif.' })
         .setTimestamp();
 
-      await channel.send({ embeds: [embed] });
+      await textChannel.send({ embeds: [embed] }).catch(() => {});
     } catch (err) {
       console.error('[Error Event] Error sending error embed:', err.message);
     }
